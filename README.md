@@ -21,6 +21,11 @@ auto imu = hakoniwa::sensor_adapter::gazebo::create_gz_imu_sensor_adapter(setup,
 - `<pose>` は 0 にします。取り付け位置姿勢はホストが当てはめます。0 でなければ、作るときにエラーにします。
 - 測る周期は `<update_rate>`（Hz）です。時刻 0 から、その周期の境目で測ります。
 
+## 座標
+
+口の座標は箱庭の決まりです。世界は NWU（x 北、y 西、z 上）、機体とセンサは FLU（x 前、y 左、z 上）です。
+Gazebo の世界は ENU ですが、IMU の計算（重力をセンサの軸に回して引く）は世界の軸の向きによらず、センサの軸は同じ FLU なので、変換はしません。
+
 ## gz-sensors との対応
 
 | 口 | gz-sensors の `ImuSensor` |
