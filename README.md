@@ -40,7 +40,27 @@ auto imu = hakoniwa::sensor_adapter::gazebo::create_gz_imu_sensor_adapter(setup,
 - 較正の値、ログの列（gz-sensors が、使っているずれの値を外に出さないため）
 - インスタンスごとの乱数
 
-## ビルド（Docker、Ubuntu 24.04 と Gazebo Jetty）
+## ビルド（pixi、macOS・Windows・Linux）
+
+依存（gz-sensors 10.2.0 とそのライブラリ、cmake、コンパイラ）は、conda-forge から [pixi](https://pixi.sh/) で入れます。
+入る場所は、このリポジトリの中の `.pixi/` だけです。システムのパッケージ（Homebrew、apt）には触りません。
+
+hakoniwa-sensor-adapter をこのリポジトリと同じ階層に置きます。2 つのリポジトリの親のディレクトリで、上から実行します。
+
+```bash
+git clone https://github.com/hakoniwalab/hakoniwa-sensor-adapter.git
+git clone https://github.com/hakoniwalab/hakoniwa-sensor-adapter-gazebo.git
+cd hakoniwa-sensor-adapter-gazebo
+pixi run test
+```
+
+`pixi run test` は、依存を入れ、構成し、ビルドし、試験を流します。Windows では、Visual Studio 2022 の C++ ビルドツールが要ります。
+
+- 環境の大きさは約 1.8 GB です（macOS arm64、245 パッケージ）。
+- macOS では、ビルドした実行ファイルを初めて開くときだけ、十数秒待つことがあります。
+- 乱数の並びは OS（C++ の標準ライブラリ）によって違います。同じ種で同じ値になるのは、同じ OS・同じ環境の中だけです。
+
+## ビルド（Docker、Ubuntu 24.04 と Gazebo Jetty の apt）
 
 hakoniwa-sensor-adapter をこのリポジトリと同じ階層に置きます。2 つのリポジトリの親のディレクトリで、上から実行します。
 

@@ -43,7 +43,7 @@ sa::ImuTruth truth_at(int k)
     truth.sim_time_ns = static_cast<std::uint64_t>(k) * 1000000;
     truth.angular_velocity = {0.2, -0.1, 0.05 * k};
     // 30 degrees roll: q = (cos 15, sin 15, 0, 0).
-    const double h = 15.0 * M_PI / 180.0;
+    const double h = 15.0 * 3.14159265358979323846 / 180.0;
     truth.orientation_world_to_sensor = {std::cos(h), std::sin(h), 0.0, 0.0};
     truth.specific_force = {0.0, -9.80665 * std::sin(2 * h), -9.80665 * std::cos(2 * h)};
     return truth;
