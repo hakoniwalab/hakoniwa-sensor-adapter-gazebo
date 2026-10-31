@@ -36,16 +36,29 @@ sa::ImuAdapterSetup setup_for(const char* file)
     return setup;
 }
 
-// A tilted, rotating truth: the specific force of a level hover rotated into a tilted sensor.
+// Rotates v by the unit quaternion q (v' = q v q*).
+sa::Vector3 rotate(const sa::Quaternion& q, const sa::Vector3& v)
+{
+    // t = 2 (q.xyz x v); v' = v + w t + q.xyz x t
+    const double tx = 2.0 * (q.y * v.z - q.z * v.y);
+    const double ty = 2.0 * (q.z * v.x - q.x * v.z);
+    const double tz = 2.0 * (q.x * v.y - q.y * v.x);
+    return {v.x + q.w * tx + (q.y * tz - q.z * ty), v.y + q.w * ty + (q.z * tx - q.x * tz),
+            v.z + q.w * tz + (q.x * ty - q.y * tx)};
+}
+
+// A tilted, rotating truth in the Hakoniwa frames (world NWU, sensor FLU): a hover
+// (no kinematic acceleration) seen by a sensor rolled 30 degrees.
 sa::ImuTruth truth_at(int k)
 {
     sa::ImuTruth truth{};
     truth.sim_time_ns = static_cast<std::uint64_t>(k) * 1000000;
     truth.angular_velocity = {0.2, -0.1, 0.05 * k};
-    // 30 degrees roll: q = (cos 15, sin 15, 0, 0).
     const double h = 15.0 * 3.14159265358979323846 / 180.0;
     truth.orientation_world_to_sensor = {std::cos(h), std::sin(h), 0.0, 0.0};
-    truth.specific_force = {0.0, -9.80665 * std::sin(2 * h), -9.80665 * std::cos(2 * h)};
+    truth.gravity_world = {0.0, 0.0, -9.80665};
+    // f = a - g with a = 0: +g up in the world, rotated into the sensor axes.
+    truth.specific_force = rotate(truth.orientation_world_to_sensor, {0.0, 0.0, 9.80665});
     return truth;
 }
 
