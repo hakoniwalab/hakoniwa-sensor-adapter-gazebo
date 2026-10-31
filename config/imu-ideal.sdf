@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- IMU without noise: the adapter passes the true values through at 250 Hz. -->
+<sdf version="1.11">
+  <model name="vehicle">
+    <link name="body">
+      <sensor name="imu" type="imu">
+        <update_rate>250</update_rate>
+        <topic>/hakoniwa/imu</topic>
+      </sensor>
+    </link>
+  </model>
+</sdf>
