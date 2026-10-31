@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- IMU with a non-zero pose: the adapter rejects it. -->
+<sdf version="1.11">
+  <model name="vehicle">
+    <link name="body">
+      <sensor name="imu" type="imu">
+        <update_rate>250</update_rate>
+        <pose>0.1 0 0 0 0 0</pose>
+        <topic>/hakoniwa/imu</topic>
+      </sensor>
+    </link>
+  </model>
+</sdf>
