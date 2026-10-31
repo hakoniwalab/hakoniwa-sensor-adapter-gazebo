@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- Magnetometer without noise at 100 Hz. -->
+<sdf version="1.11">
+  <model name="vehicle">
+    <link name="body">
+      <sensor name="mag" type="magnetometer">
+        <update_rate>100</update_rate>
+      </sensor>
+    </link>
+  </model>
+</sdf>
