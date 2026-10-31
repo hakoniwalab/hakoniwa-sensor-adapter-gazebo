@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- NavSat at 10 Hz. Horizontal position noise is in degrees (1e-5 deg, about 1.1 m of latitude),
+     vertical in metres (0.5 m), velocity in m/s (0.1). -->
+<sdf version="1.11">
+  <model name="vehicle">
+    <link name="body">
+      <sensor name="gps" type="navsat">
+        <update_rate>10</update_rate>
+        <navsat>
+          <position_sensing>
+            <horizontal><noise type="gaussian"><mean>0</mean><stddev>1e-5</stddev></noise></horizontal>
+            <vertical><noise type="gaussian"><mean>0</mean><stddev>0.5</stddev></noise></vertical>
+          </position_sensing>
+          <velocity_sensing>
+            <horizontal><noise type="gaussian"><mean>0</mean><stddev>0.1</stddev></noise></horizontal>
+            <vertical><noise type="gaussian"><mean>0</mean><stddev>0.1</stddev></noise></vertical>
+          </velocity_sensing>
+        </navsat>
+      </sensor>
+    </link>
+  </model>
+</sdf>

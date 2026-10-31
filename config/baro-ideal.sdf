@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- Air pressure without noise at 50 Hz. -->
+<sdf version="1.11">
+  <model name="vehicle">
+    <link name="body">
+      <sensor name="baro" type="air_pressure">
+        <update_rate>50</update_rate>
+      </sensor>
+    </link>
+  </model>
+</sdf>

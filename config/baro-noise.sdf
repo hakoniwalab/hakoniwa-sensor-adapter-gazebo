@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- Air pressure with Gaussian noise of 10 Pa at 50 Hz. -->
+<sdf version="1.11">
+  <model name="vehicle">
+    <link name="body">
+      <sensor name="baro" type="air_pressure">
+        <update_rate>50</update_rate>
+        <air_pressure>
+          <pressure><noise type="gaussian"><mean>0</mean><stddev>10</stddev></noise></pressure>
+        </air_pressure>
+      </sensor>
+    </link>
+  </model>
+</sdf>
