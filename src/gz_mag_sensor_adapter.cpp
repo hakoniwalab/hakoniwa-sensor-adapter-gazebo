@@ -27,6 +27,7 @@ public:
             return false;
         }
         sdf_.SetTopic(detail::unique_topic(setup_));
+        detail::seed_random(setup_);
         return create_sensor(error);
     }
 
@@ -64,10 +65,11 @@ public:
     MagAdapterCapabilities capabilities() const override
     {
         MagAdapterCapabilities caps{};
-        caps.noise = true;  // Gaussian per axis, with bias, dynamic bias and precision
-        caps.hard_iron = false;
-        caps.drift = true;
-        caps.resolution = true;
+        caps.noise = true;
+        // MagnetometerSensor applies its noise with a time step of 0, so the dynamic
+        // bias never moves; precisions below 1e-6 (tesla) are ignored by gz-sensors.
+        caps.drift = false;
+        caps.resolution = false;
         return caps;
     }
 
@@ -77,7 +79,6 @@ public:
 private:
     bool create_sensor(std::string& error)
     {
-        detail::seed_random(setup_);
         gz::sensors::SensorFactory factory;
         sensor_ = factory.CreateSensor<gz::sensors::MagnetometerSensor>(sdf_);
         if (!sensor_) {

@@ -2,6 +2,12 @@
 
 // Helpers shared by the Gazebo adapters (not part of the public interface).
 
+#ifdef _WIN32
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -52,7 +58,8 @@ inline bool load_sensor_sdf(const std::string& path, sdf::SensorType type, const
     return false;
 }
 
-// Seeds gz-sensors' process-wide random generator when the host gave a seed.
+// Seeds gz-sensors' process-wide random generator when the host gave a seed. Called when an
+// adapter is created, not on reset: a reset must not restart the sequence other sensors draw from.
 inline void seed_random(const SensorAdapterSetup& setup)
 {
     if (setup.has_random_seed) {
@@ -60,12 +67,23 @@ inline void seed_random(const SensorAdapterSetup& setup)
     }
 }
 
-// A topic of its own for each instance, so that instances never share a publisher.
+inline long process_id()
+{
+#ifdef _WIN32
+    return static_cast<long>(_getpid());
+#else
+    return static_cast<long>(::getpid());
+#endif
+}
+
+// A topic of its own for each instance, so that instances never share a publisher, within
+// the process or with another process on the same PC (gz-transport finds topics across
+// processes).
 inline std::string unique_topic(const SensorAdapterSetup& setup)
 {
     static std::atomic<std::uint64_t> counter{0};
-    return "/hakoniwa/sensor_adapter/" + std::to_string(setup.vehicle_index) + "/" + setup.sensor_name + "/" +
-           std::to_string(counter++);
+    return "/hakoniwa/sensor_adapter/" + std::to_string(process_id()) + "/" + std::to_string(setup.vehicle_index) +
+           "/" + setup.sensor_name + "/" + std::to_string(counter++);
 }
 
 // The interface's time rule: 0, dt, 2 dt, ...

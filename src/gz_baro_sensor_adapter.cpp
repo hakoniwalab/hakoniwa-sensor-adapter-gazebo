@@ -46,6 +46,7 @@ public:
             error = "cannot subscribe to " + topic_;
             return false;
         }
+        detail::seed_random(setup_);
         return create_sensor(error);
     }
 
@@ -84,8 +85,9 @@ public:
         // Fixed standard sea level (101325 Pa, 288.15 K); no temperature or
         // pressure altitude in the output.
         caps.noise = true;
-        caps.offset = true;
-        caps.drift = true;
+        caps.offset = true;  // the sign of bias_mean is flipped with probability 1/2
+        // AirPressureSensor applies its noise with a time step of 0: the dynamic bias never moves.
+        caps.drift = false;
         caps.resolution = true;
         return caps;
     }
@@ -96,7 +98,6 @@ public:
 private:
     bool create_sensor(std::string& error)
     {
-        detail::seed_random(setup_);
         gz::sensors::SensorFactory factory;
         sensor_ = factory.CreateSensor<gz::sensors::AirPressureSensor>(sdf_);
         if (!sensor_) {
