@@ -35,6 +35,7 @@ public:
             return false;
         }
         sdf_.SetTopic(detail::unique_topic(setup_));
+        detail::seed_random(setup_);
         return create_sensor(error);
     }
 
@@ -78,7 +79,8 @@ public:
         GpsAdapterCapabilities caps{};
         caps.position_noise = true;  // in degrees of latitude and longitude, metres of altitude
         caps.velocity_noise = true;
-        caps.drift = true;           // dynamic bias of the noise models
+        // NavSatSensor applies its noise with a time step of 0: the dynamic bias never moves.
+        caps.drift = false;
         return caps;
     }
 
@@ -88,7 +90,6 @@ public:
 private:
     bool create_sensor(std::string& error)
     {
-        detail::seed_random(setup_);
         gz::sensors::SensorFactory factory;
         sensor_ = factory.CreateSensor<gz::sensors::NavSatSensor>(sdf_);
         if (!sensor_) {

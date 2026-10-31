@@ -156,8 +156,9 @@ void air_pressure()
     }
     std::printf("baro noise: n=%zu sd=%.2f Pa (configured 10)\n", e.size(), stddev(e));
     check(stddev(e) > 7.5 && stddev(e) < 12.5, "baro noise in pascals");
-    check(!noisy->capabilities().sea_level_weather && !noisy->capabilities().temperature,
-          "capabilities: no weather, no temperature");
+    check(!noisy->capabilities().sea_level_weather && !noisy->capabilities().temperature &&
+              !noisy->capabilities().drift,
+          "capabilities: no weather, no temperature, no drift");
 }
 
 // --- navsat ---
@@ -197,9 +198,11 @@ void navsat()
 
     auto noisy = sa::gazebo::create_gz_gps_sensor_adapter(setup_for<sa::GpsAdapterSetup>("gps-noise.sdf"), error);
     std::vector<double> lat, alt, vn;
+    double first_lat = 0.0;
     for (int k = 0; k < 40000; ++k) {
         sa::GpsSample s{};
         noisy->step(gps_truth(k), s, error);
+        if (k == 0) first_lat = s.position.latitude_deg;
         if (s.updated) {
             lat.push_back(s.position.latitude_deg - gps_truth(k).position.latitude_deg);
             alt.push_back(s.position.altitude_m - gps_truth(k).position.altitude_m);
@@ -212,14 +215,16 @@ void navsat()
     check(stddev(alt) > 0.375 && stddev(alt) < 0.625, "vertical noise is in metres");
     check(stddev(vn) > 0.075 && stddev(vn) < 0.125, "velocity noise is in m/s");
 
-    check(noisy->reset(error), "gps reset");
-    sa::GpsSample first_after_reset{};
-    noisy->step(gps_truth(0), first_after_reset, error);
+    // A new instance with the same seed starts the sequence again; a reset does not.
     auto again = sa::gazebo::create_gz_gps_sensor_adapter(setup_for<sa::GpsAdapterSetup>("gps-noise.sdf"), error);
     sa::GpsSample first_new{};
     again->step(gps_truth(0), first_new, error);
-    check(first_after_reset.position.latitude_deg == first_new.position.latitude_deg,
-          "same seed: reset and a new instance start with the same value");
+    check(noisy->reset(error), "gps reset");
+    sa::GpsSample first_after_reset{};
+    noisy->step(gps_truth(0), first_after_reset, error);
+    check(first_new.position.latitude_deg == first_lat,
+          "same seed: a new instance starts with the same value as the first one");
+    check(first_after_reset.position.latitude_deg != first_lat, "a reset does not start the sequence again");
 }
 
 }  // namespace

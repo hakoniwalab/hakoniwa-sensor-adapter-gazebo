@@ -95,7 +95,7 @@ void ideal_sensor_passes_the_truth_at_its_rate()
     }
 }
 
-void same_seed_gives_the_same_values_and_reset_repeats_them()
+void same_seed_gives_the_same_values_and_reset_does_not_reseed()
 {
     std::string error;
     auto first = sa::gazebo::create_gz_imu_sensor_adapter(setup_for("imu-noise.sdf"), error);
@@ -123,7 +123,8 @@ void same_seed_gives_the_same_values_and_reset_repeats_them()
             ++n;
         }
     }
-    check(same_after_reset, "reset repeats the same values with the same seed");
+    // The process-wide generator is seeded only on creation: a reset continues the sequence.
+    check(!same_after_reset, "reset does not seed the process-wide generator again");
     check(same_new_instance, "a new instance with the same seed gives the same values");
     const double sd = std::sqrt(sum2 / n - (sum / n) * (sum / n));
     std::printf("accel x noise: n=%d mean=%.4f sd=%.4f (configured 0.03)\n", n, sum / n, sd);
@@ -165,7 +166,7 @@ void capabilities_declare_what_gazebo_lacks()
 int main()
 {
     ideal_sensor_passes_the_truth_at_its_rate();
-    same_seed_gives_the_same_values_and_reset_repeats_them();
+    same_seed_gives_the_same_values_and_reset_does_not_reseed();
     a_mount_pose_in_the_sdf_is_rejected();
     a_time_jump_is_an_error();
     capabilities_declare_what_gazebo_lacks();

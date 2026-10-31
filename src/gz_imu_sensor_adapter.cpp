@@ -71,6 +71,9 @@ public:
             error = "the IMU <pose> must be zero (the host applies the mounting pose)";
             return false;
         }
+        if (setup_.has_random_seed) {
+            gz::math::Rand::Seed(static_cast<unsigned int>(setup_.random_seed));
+        }
         return create_sensor(error);
     }
 
@@ -114,8 +117,9 @@ public:
 
     bool reset(std::string& error) override
     {
-        // gz-sensors has no reset: recreate the sensor (noise biases are drawn again
-        // from the same seed).
+        // gz-sensors has no reset: recreate the sensor. The process-wide random generator is
+        // not seeded again (that would restart the sequence of every other gz sensor), so the
+        // values after a reset are not the ones after creation.
         next_time_ns_ = 0;
         last_ = {};
         return create_sensor(error);
@@ -152,9 +156,6 @@ public:
 private:
     bool create_sensor(std::string& error)
     {
-        if (setup_.has_random_seed) {
-            gz::math::Rand::Seed(static_cast<unsigned int>(setup_.random_seed));
-        }
         gz::sensors::SensorFactory factory;
         sensor_ = factory.CreateSensor<gz::sensors::ImuSensor>(sdf_);
         if (!sensor_) {
