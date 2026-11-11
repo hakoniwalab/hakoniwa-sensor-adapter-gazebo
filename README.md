@@ -1,9 +1,9 @@
 # hakoniwa-sensor-adapter-gazebo
 
-Gazebo の [gz-sensors](https://github.com/gazebosim/gz-sensors) を、[hakoniwa-sensor-adapter](https://github.com/hakoniwalab/hakoniwa-sensor-adapter) の口（`IImuSensorAdapter`）の裏に包むアダプタです。
+Gazebo の [gz-sensors](https://github.com/gazebosim/gz-sensors) を、[hakoniwa-sensor-adapter](https://github.com/hakoniwalab/hakoniwa-sensor-adapter) の口（`IImuSensorAdapter` など）の裏に包むアダプタです。
 物理の計算は使いません。ホストが渡す真値に、gz-sensors の誤差のモデル（ノイズ、ずれ、ゆっくり変わるずれ、分解能、測る周期）を当てはめます。
 
-対応しているセンサは、箱庭ドローン PRO の 5 つのセンサです。
+対応しているセンサは、箱庭ドローン PRO の 5 つのセンサと、6 軸の力覚センサです。
 
 | 口 | gz-sensors | 作る関数 |
 |---|---|---|
@@ -11,6 +11,7 @@ Gazebo の [gz-sensors](https://github.com/gazebosim/gz-sensors) を、[hakoniwa
 | `IMagSensorAdapter`（地磁気） | `MagnetometerSensor` | `create_gz_mag_sensor_adapter` |
 | `IBaroSensorAdapter`（気圧） | `AirPressureSensor` | `create_gz_baro_sensor_adapter` |
 | `IGpsSensorAdapter`（GPS） | `NavSatSensor` | `create_gz_gps_sensor_adapter` |
+| `IForceTorqueSensorAdapter`（6 軸の力覚） | `ForceTorqueSensor` | `create_gz_force_torque_sensor_adapter` |
 
 ## 使い方
 
@@ -93,6 +94,18 @@ SDF のノイズの値は、**水平の位置が度**（緯度・経度にその
 - 同じ度を経度にも足すので、東の方向のノイズは、北の cos(緯度) 倍に縮みます（緯度 47.6° で 0.67 倍）。
 - ノイズは時間の幅 0 で足されます。`dynamic_bias_stddev` を書いても、ずれは動きません。
 
+### 力覚
+
+| 口 | gz-sensors の `ForceTorqueSensor` |
+|---|---|
+| 真値（工具の側がロボットの側に及ぼす力とモーメント、センサの軸、センサの原点まわり） | 符号を反転して `SetForce`、`SetTorque`。gz-sensors は「親が子に及ぼす力」を受け取り、既定の `measure_direction`（`child_to_parent`）で反転して出すので、口と同じ向きの値が出る |
+| 測った値 | `MeasuredWrench()`（ノイズを足したあと）。`Force()`・`Torque()` は渡した入力を返すので使わない |
+| `<frame>` | `sensor` を使う。親・子の軸への回転は単位のまま（真値はセンサの軸で渡すため） |
+| ゼロ点合わせ（`tare`） | gz-sensors にないので、false を返す |
+
+- `<measure_direction>` を `parent_to_child` にすると、出力の向きが口と逆になります（gz-sensors の振る舞い）。
+- ノイズは軸ごとに `<force>`・`<torque>` の `<x>`・`<y>`・`<z>` に書きます。固定のずれ、ゆっくり変わるずれ（1 次の Gauss-Markov）、分解能（`gaussian_quantized` の `precision`）が効きます。
+
 ### すべてのセンサに共通
 
 | 口 | gz-sensors |
@@ -110,6 +123,7 @@ SDF のノイズの値は、**水平の位置が度**（緯度・経度にその
 - 地磁気：硬鉄・軟鉄、ゆっくり変わるずれ、分解能
 - 気圧：海面の天気、気温、気圧高度、ゆっくり変わるずれ
 - GPS：進行方向、受信機の状態（精度・衛星の数）、ゆっくり変わるずれ
+- 力覚：ローパス、非線形、較正の行列（目盛りの誤差・軸の干渉）、過負荷、ゼロ点合わせ
 
 ## ビルド（pixi、macOS・Windows・Linux）
 
