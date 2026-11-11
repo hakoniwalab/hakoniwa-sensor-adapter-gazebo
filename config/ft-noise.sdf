@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!-- Force-torque sensor at 500 Hz with Gaussian noise: 0.1 N (Fx, Fy), 0.2 N (Fz),
+     0.01 N m (Tx, Ty), 0.02 N m (Tz). -->
+<sdf version="1.11">
+  <model name="arm">
+    <link name="flange">
+      <sensor name="ft" type="force_torque">
+        <update_rate>500</update_rate>
+        <force_torque>
+          <frame>sensor</frame>
+          <measure_direction>child_to_parent</measure_direction>
+          <force>
+            <x><noise type="gaussian"><mean>0</mean><stddev>0.1</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0</mean><stddev>0.1</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0</mean><stddev>0.2</stddev></noise></z>
+          </force>
+          <torque>
+            <x><noise type="gaussian"><mean>0</mean><stddev>0.01</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0</mean><stddev>0.01</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev></noise></z>
+          </torque>
+        </force_torque>
+      </sensor>
+    </link>
+  </model>
+</sdf>
