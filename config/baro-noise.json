@@ -1,0 +1,18 @@
+{
+  "type": "baro",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "baro",
+    "@type": "air_pressure",
+    "update_rate": 50,
+    "air_pressure": {
+      "pressure": {
+        "noise": {
+          "@type": "gaussian",
+          "mean": 0,
+          "stddev": 10
+        }
+      }
+    }
+  }
+}

@@ -224,6 +224,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/muparser-2.3.5-hee9eb32_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.6-hdb14827_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ninja-1.13.2-h171cf75_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/nlohmann_json-3.12.0-h54a6638_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ocl-icd-2.3.4-hb03c661_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ogre-1.10.12.1-hf60509c_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ogre-next-2.3.3-ha916a4f_1.conda
@@ -490,6 +491,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/muparser-2.3.5-hfb11796_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/ncurses-6.6-h2b6f883_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/ninja-1.13.2-hdc560ac_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/nlohmann_json-3.12.0-h7ac5ae9_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/ogre-1.10.12.1-hc65bfbb_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/ogre-next-2.3.3-hdfe6764_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/openexr-3.5.3-he3cc6ec_0.conda
@@ -742,6 +744,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/muparser-2.3.5-ha9ef990_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ncurses-6.6-hcc0dc9a_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ninja-1.13.2-hebe015c_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/nlohmann_json-3.12.0-h2fb4741_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ogre-1.10.12.1-h664fa73_10.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ogre-next-2.3.3-h0aac46b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/openexr-3.5.3-hc741830_0.conda
@@ -987,6 +990,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/muparser-2.3.5-h5af64e8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ncurses-6.6-he64c551_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ninja-1.13.2-h3feff0a_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/nlohmann_json-3.12.0-h784d473_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ogre-1.10.12.1-h4fbf918_10.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ogre-next-2.3.3-h167f6a0_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/openexr-3.5.3-h5d0c33b_0.conda
@@ -1175,6 +1179,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/mpg123-1.33.7-ha58212f_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/muparser-2.3.5-h5112557_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/ninja-1.13.2-h477610d_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/win-64/nlohmann_json-3.12.0-h5112557_2.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/ogre-1.10.12.1-hc96c8ff_10.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/ogre-next-2.3.3-hb2de451_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/openexr-3.5.3-h23de9c7_0.conda
@@ -4352,6 +4357,16 @@ packages:
   run_exports: {}
   size: 186767
   timestamp: 1786713048064
+- conda: https://conda.anaconda.org/conda-forge/linux-64/nlohmann_json-3.12.0-h54a6638_2.conda
+  sha256: 8f8b554c74b032b3e63a8828fb0ecc7ae4f5c5a6bd0afcf75423d5ff79290cb0
+  md5: fe93be7dd9209e6ae673962e3031ff51
+  constrains:
+  - nlohmann_json-abi ==3.12.0
+  license: MIT
+  license_family: MIT
+  run_exports: {}
+  size: 136372
+  timestamp: 1785920438981
 - conda: https://conda.anaconda.org/conda-forge/linux-64/ocl-icd-2.3.4-hb03c661_1.conda
   sha256: 75f3bf733523a338f73d6c276c4a26634877cd970edb558f2769d9fa52b100a9
   md5: c2871ba95727fd1382c05db66048b64c
@@ -8235,6 +8250,16 @@ packages:
   run_exports: {}
   size: 182159
   timestamp: 1786713053611
+- conda: https://conda.anaconda.org/conda-forge/linux-aarch64/nlohmann_json-3.12.0-h7ac5ae9_2.conda
+  sha256: e441cbcffb6a3b0c6c9071a14a2cd08bd175d95dde16c5413e8a678f875baab0
+  md5: d246583ab3e0b8d3968fc5abf7592e17
+  constrains:
+  - nlohmann_json-abi ==3.12.0
+  license: MIT
+  license_family: MIT
+  run_exports: {}
+  size: 137086
+  timestamp: 1785920446447
 - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/ogre-1.10.12.1-hc65bfbb_10.conda
   sha256: 7a2f0b86eb7b4fd5be1a1ad81785cc027817dbd60ff6cae9de8da6269336e866
   md5: a95bc1dacf3898cbc1fecd80660f63c7
@@ -11987,6 +12012,16 @@ packages:
   run_exports: {}
   size: 178973
   timestamp: 1786713175652
+- conda: https://conda.anaconda.org/conda-forge/osx-64/nlohmann_json-3.12.0-h2fb4741_2.conda
+  sha256: fa1d86b7d132c3073f02afc011d7660ce9b9e4527120d72da1c8ac227012058a
+  md5: b41c5a18d6e33470fa6e25430767c17f
+  constrains:
+  - nlohmann_json-abi ==3.12.0
+  license: MIT
+  license_family: MIT
+  run_exports: {}
+  size: 137530
+  timestamp: 1785920668617
 - conda: https://conda.anaconda.org/conda-forge/osx-64/ogre-1.10.12.1-h664fa73_10.conda
   sha256: 595d0cad3dca2bc2b8fe739db54b1b30bb58ce87450bc0b2fa1fc5f491b18cf9
   md5: 635f9e2e36ca332ef7910abe69b65320
@@ -15548,6 +15583,16 @@ packages:
   run_exports: {}
   size: 164371
   timestamp: 1786713083876
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/nlohmann_json-3.12.0-h784d473_2.conda
+  sha256: 3c7235b1574907737d09b46b3a0f7f0f5fcafc2380f2c8d02fc55aa23ce47c3c
+  md5: 0debf38c50bb3ea6f712c87310a00289
+  constrains:
+  - nlohmann_json-abi ==3.12.0
+  license: MIT
+  license_family: MIT
+  run_exports: {}
+  size: 137984
+  timestamp: 1785920576349
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ogre-1.10.12.1-h4fbf918_10.conda
   sha256: ac7facd73f87a1dac64bf270f15f21a879a40270e2937353b2dba08aa8a1157f
   md5: 29c74d0c06dd962aa98118ab3de366aa
@@ -18446,6 +18491,16 @@ packages:
   run_exports: {}
   size: 309772
   timestamp: 1786713090968
+- conda: https://conda.anaconda.org/conda-forge/win-64/nlohmann_json-3.12.0-h5112557_2.conda
+  sha256: 460d5a644bd7f195784f7e17d550274986ddffa1d534b18195322de1f81cf42d
+  md5: faf4e3f7981777629dd7cbef578834ad
+  constrains:
+  - nlohmann_json-abi ==3.12.0
+  license: MIT
+  license_family: MIT
+  run_exports: {}
+  size: 135270
+  timestamp: 1785920493388
 - conda: https://conda.anaconda.org/conda-forge/win-64/ogre-1.10.12.1-hc96c8ff_10.conda
   sha256: 78436eae8188687eb850b270b3a097e7289c860f1dba435a2381193466c7e5de
   md5: bcbf5d4522ee9f68a84673dac06b0680

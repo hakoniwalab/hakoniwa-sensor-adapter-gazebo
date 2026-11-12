@@ -1,0 +1,10 @@
+{
+  "type": "imu",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "imu",
+    "@type": "imu",
+    "update_rate": 250,
+    "topic": "/hakoniwa/imu"
+  }
+}

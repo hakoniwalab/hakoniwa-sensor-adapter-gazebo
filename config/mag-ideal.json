@@ -1,0 +1,9 @@
+{
+  "type": "mag",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "mag",
+    "@type": "magnetometer",
+    "update_rate": 100
+  }
+}

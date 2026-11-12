@@ -1,0 +1,70 @@
+{
+  "type": "imu",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "imu",
+    "@type": "imu",
+    "update_rate": 250,
+    "topic": "/hakoniwa/imu",
+    "imu": {
+      "angular_velocity": {
+        "x": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.0008726646,
+            "bias_mean": 0,
+            "bias_stddev": 0
+          }
+        },
+        "y": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.0008726646,
+            "bias_mean": 0,
+            "bias_stddev": 0
+          }
+        },
+        "z": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.0008726646,
+            "bias_mean": 0,
+            "bias_stddev": 0
+          }
+        }
+      },
+      "linear_acceleration": {
+        "x": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.03,
+            "bias_mean": 0,
+            "bias_stddev": 0
+          }
+        },
+        "y": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.03,
+            "bias_mean": 0,
+            "bias_stddev": 0
+          }
+        },
+        "z": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.03,
+            "bias_mean": 0,
+            "bias_stddev": 0
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "force_torque",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "ft",
+    "@type": "force_torque",
+    "update_rate": 500,
+    "force_torque": {
+      "frame": "sensor",
+      "measure_direction": "child_to_parent"
+    }
+  }
+}

@@ -9,6 +9,7 @@ cmake = ">=3.16"
 ninja = "*"
 cxx-compiler = "*"
 pkg-config = "*"
+nlohmann_json = ">=3.11"
 
 [tasks]
 configure = "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DHAKONIWA_SENSOR_ADAPTER_GAZEBO_BUILD_TESTS=ON -DCMAKE_PREFIX_PATH=$CONDA_PREFIX"

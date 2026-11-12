@@ -14,6 +14,8 @@
 #include <sdf/Root.hh>
 #include <sdf/Sensor.hh>
 
+#include "gz_adapter_common.hpp"
+
 namespace hakoniwa::sensor_adapter::gazebo {
 namespace {
 
@@ -27,28 +29,6 @@ Vector3 from_gz(const gz::math::Vector3d& v)
     return {v.X(), v.Y(), v.Z()};
 }
 
-// Finds the first IMU sensor of the first model's links.
-bool find_imu_sensor(const sdf::Root& root, sdf::Sensor& out, std::string& error)
-{
-    const sdf::Model* model = root.Model();
-    if (model == nullptr) {
-        error = "the SDFormat file has no <model>";
-        return false;
-    }
-    for (std::uint64_t l = 0; l < model->LinkCount(); ++l) {
-        const sdf::Link* link = model->LinkByIndex(l);
-        for (std::uint64_t s = 0; s < link->SensorCount(); ++s) {
-            const sdf::Sensor* sensor = link->SensorByIndex(s);
-            if (sensor->Type() == sdf::SensorType::IMU) {
-                out = *sensor;
-                return true;
-            }
-        }
-    }
-    error = "the SDFormat file has no <sensor type=\"imu\">";
-    return false;
-}
-
 class GzImuSensorAdapter : public IImuSensorAdapter {
 public:
     bool initialize(const ImuAdapterSetup& setup, std::string& error)
@@ -58,17 +38,8 @@ public:
             error = "physics_step_ns must be positive";
             return false;
         }
-        sdf::Root root;
-        const sdf::Errors errors = root.Load(setup.config_path);
-        if (!errors.empty()) {
-            error = "cannot load " + setup.config_path + ": " + errors.front().Message();
-            return false;
-        }
-        if (!find_imu_sensor(root, sdf_, error)) {
-            return false;
-        }
-        if (sdf_.RawPose() != gz::math::Pose3d::Zero) {
-            error = "the IMU <pose> must be zero (the host applies the mounting pose)";
+        // The same loader as the other adapters (SDFormat or its JSON form, zero <pose>).
+        if (!detail::load_sensor_sdf(setup.config_path, sdf::SensorType::IMU, "imu", sdf_, error)) {
             return false;
         }
         if (setup_.has_random_seed) {
