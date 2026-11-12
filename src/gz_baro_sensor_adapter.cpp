@@ -29,7 +29,13 @@ class GzBaroSensorAdapter : public IBaroSensorAdapter {
 public:
     explicit GzBaroSensorAdapter(const BaroAdapterSetup& setup) : setup_(setup), clock_(setup.physics_step_ns) {}
 
-    ~GzBaroSensorAdapter() override { node_.Unsubscribe(topic_); }
+    // Nothing was subscribed when creation failed before the topic was set.
+    ~GzBaroSensorAdapter() override
+    {
+        if (!topic_.empty()) {
+            node_.Unsubscribe(topic_);
+        }
+    }
 
     bool initialize(std::string& error)
     {

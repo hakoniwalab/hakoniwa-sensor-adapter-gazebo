@@ -22,15 +22,27 @@
 
 #include "hakoniwa/sensor_adapter/sensor_adapter.hpp"
 
+#include "gz_definition_json.hpp"
+
 namespace hakoniwa::sensor_adapter::gazebo::detail {
 
-// Loads the SDFormat file and finds the first sensor of the type in the first
-// model's links. Its <pose> must be zero: the host applies the mounting pose.
+// Loads the definition (an SDFormat file, or its JSON form from tools/sdf_json.py)
+// and finds the first sensor of the type in the first model's links. Its <pose>
+// must be zero: the host applies the mounting pose.
 inline bool load_sensor_sdf(const std::string& path, sdf::SensorType type, const char* type_name,
                             sdf::Sensor& out, std::string& error)
 {
     sdf::Root root;
-    const sdf::Errors errors = root.Load(path);
+    sdf::Errors errors;
+    if (is_json_definition(path)) {
+        std::string sdf_text;
+        if (!sdf_from_json_definition(path, type_name, sdf_text, error)) {
+            return false;
+        }
+        errors = root.LoadSdfString(sdf_text);
+    } else {
+        errors = root.Load(path);
+    }
     if (!errors.empty()) {
         error = "cannot load " + path + ": " + errors.front().Message();
         return false;

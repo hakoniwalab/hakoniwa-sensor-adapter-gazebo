@@ -1,0 +1,59 @@
+{
+  "type": "force_torque",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "ft",
+    "@type": "force_torque",
+    "update_rate": 500,
+    "force_torque": {
+      "frame": "sensor",
+      "measure_direction": "child_to_parent",
+      "force": {
+        "x": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.1
+          }
+        },
+        "y": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.1
+          }
+        },
+        "z": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.2
+          }
+        }
+      },
+      "torque": {
+        "x": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.01
+          }
+        },
+        "y": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.01
+          }
+        },
+        "z": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.02
+          }
+        }
+      }
+    }
+  }
+}

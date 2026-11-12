@@ -1,0 +1,32 @@
+{
+  "type": "mag",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "mag",
+    "@type": "magnetometer",
+    "update_rate": 100,
+    "magnetometer": {
+      "x": {
+        "noise": {
+          "@type": "gaussian",
+          "mean": 0,
+          "stddev": 1e-08
+        }
+      },
+      "y": {
+        "noise": {
+          "@type": "gaussian",
+          "mean": 0,
+          "stddev": 1e-08
+        }
+      },
+      "z": {
+        "noise": {
+          "@type": "gaussian",
+          "mean": 0,
+          "stddev": 1e-08
+        }
+      }
+    }
+  }
+}

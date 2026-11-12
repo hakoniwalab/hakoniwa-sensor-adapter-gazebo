@@ -1,0 +1,9 @@
+{
+  "type": "gps",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "gps",
+    "@type": "navsat",
+    "update_rate": 10
+  }
+}

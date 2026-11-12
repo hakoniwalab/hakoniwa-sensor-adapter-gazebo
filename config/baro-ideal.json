@@ -1,0 +1,9 @@
+{
+  "type": "baro",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "baro",
+    "@type": "air_pressure",
+    "update_rate": 50
+  }
+}

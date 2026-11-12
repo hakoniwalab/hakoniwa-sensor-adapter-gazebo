@@ -29,6 +29,45 @@ auto imu = hakoniwa::sensor_adapter::gazebo::create_gz_imu_sensor_adapter(setup,
 - `<pose>` は 0 にします。取り付け位置姿勢はホストが当てはめます。0 でなければ、作るときにエラーにします。
 - 測る周期は `<update_rate>`（Hz）です。時刻 0 から、その周期の境目で測ります。
 
+## 名前で選ぶ（実装「gazebo」）と JSON の定義ファイル
+
+箱庭ロボットランタイムのように、センサの実装を名前で選ぶホストは、このライブラリを `gazebo` として使います（入口は `src/gazebo_implementation.cpp`）。
+
+| 種別 | 作る関数 | 定義ファイル |
+|---|---|---|
+| `imu`、`mag`、`baro`、`gps`、`force_torque` | 上の表の関数 | SDFormat、またはその JSON の形 |
+| `joint`（関節のエンコーダ） | `create_gz_joint_sensor_adapter` | JSON（`{"type": "joint", "update_rate": 50}`） |
+
+- **関節：** gz-sensors には関節のセンサがありません。Gazebo は関節の状態を JointStatePublisher で出しますが、これはノイズも遅れもない真値です。この実装も同じく、関節の角度と角速度の真値を返します。書ける項目は測る周期 `update_rate`（Hz）だけで、省くか 0 なら毎ステップ測ります。
+- **JSON の形：** 定義ファイルを JSON でしか読まないホストのために、SDFormat の `<sensor>` を 1 対 1 で JSON に写した形も読めます。拡張子が `.json` なら JSON として読み、SDFormat の文字列に戻して gz-sensors に渡します。
+
+```json
+{"type": "imu", "sdf_version": "1.11",
+ "sensor": {"@name": "imu", "@type": "imu", "update_rate": 250, "imu": {"angular_velocity": {"x": {"noise": {"@type": "gaussian", "stddev": 0.0008726646}}}}}}
+```
+
+写し方：
+
+| SDFormat | JSON |
+|---|---|
+| 属性 `type="gaussian"` | キー `"@type"`（文字列） |
+| 子の要素 | 要素名のキー |
+| 同じ名前の子が複数 | 配列（並びの順） |
+| 中身だけの要素 | 数（整数・小数）か文字列（`"0 0 0"`、`"true"` など）。空なら `""` |
+| 属性や子と一緒の中身 | キー `"#text"` |
+
+- `type` はホストの種別名（`imu`、`mag`、`baro`、`gps`、`force_torque`）です。`sensor.@type` は gz-sensors の種類（`imu`、`magnetometer`、`air_pressure`、`navsat`、`force_torque`）で、省けます。
+- JSON の `true`・`false`・`null` と、配列の中の配列は SDFormat に写せないので、作るときにエラーにします（場所を示します）。
+- `config/` の `.sdf` の例には、それぞれ同じ名前の `.json` があります。同じ種で、SDF と JSON がまったく同じ値を出すことを試験で確かめています。
+
+変換の道具（Python の標準ライブラリだけ）：
+
+```bash
+python3 tools/sdf_json.py to-json config/imu-noise.sdf -o /tmp/imu-noise.json
+python3 tools/sdf_json.py to-sdf /tmp/imu-noise.json -o /tmp/imu-noise.sdf
+python3 -m unittest discover -s tools -p 'test_*.py'
+```
+
 ## 乱数
 
 gz-sensors の乱数は、プロセス全体で 1 つです（`gz::math::Rand`）。

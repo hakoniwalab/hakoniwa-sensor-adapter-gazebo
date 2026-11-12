@@ -1,0 +1,43 @@
+{
+  "type": "gps",
+  "sdf_version": "1.11",
+  "sensor": {
+    "@name": "gps",
+    "@type": "navsat",
+    "update_rate": 10,
+    "navsat": {
+      "position_sensing": {
+        "horizontal": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 1e-05
+          }
+        },
+        "vertical": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.5
+          }
+        }
+      },
+      "velocity_sensing": {
+        "horizontal": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.1
+          }
+        },
+        "vertical": {
+          "noise": {
+            "@type": "gaussian",
+            "mean": 0,
+            "stddev": 0.1
+          }
+        }
+      }
+    }
+  }
+}
