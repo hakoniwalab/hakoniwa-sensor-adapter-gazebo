@@ -29,6 +29,8 @@ auto imu = hakoniwa::sensor_adapter::gazebo::create_gz_imu_sensor_adapter(setup,
 - `<pose>` は 0 にします。取り付け位置姿勢はホストが当てはめます。0 でなければ、作るときにエラーにします。
 - 測る周期は `<update_rate>`（Hz）です。時刻 0 から、その周期の境目で測ります。
 
+IMU・地磁気・気圧・GPS は `update_period_ns()` と `set_update_period_ns()` に対応します。IMU のジャイロと加速度は同じ周期を使い、`part_update_period_ns()` では両方を読めますが、`set_part_update_period_ns()` は現在と同じ周期だけを受け入れ、一方だけを違う周期にする変更は拒みます。周期の変更は、最後に測った値、ノイズ・ずれ・ドリフトの状態、乱数の続きをすべて保ち、何もリセットせず、次の刻みから新しい周期（時刻 0 からの倍数）と新しい `UpdateRate` を使います。`reset()` はセンサを作り直して設定の周期と空の保持値に戻しますが、プロセス全体の乱数列は巻き戻しません。
+
 ## 名前で選ぶ（実装「gazebo」）と JSON の定義ファイル
 
 箱庭ロボットランタイムのように、センサの実装を名前で選ぶホストは、このライブラリを `gazebo` として使います（入口は `src/gazebo_implementation.cpp`）。
