@@ -15,11 +15,32 @@ namespace {
 
 int failures = 0;
 
-void check(bool condition, const char* what)
+void check(bool condition, const std::string& what)
 {
     if (!condition) {
-        std::fprintf(stderr, "FAIL: %s\n", what);
+        std::fprintf(stderr, "FAIL: %s\n", what.c_str());
         ++failures;
+    }
+}
+
+void check_invalid_periods(sa::ISensorAdapter& adapter, std::uint64_t unchanged_period, const std::string& name)
+{
+    struct Case {
+        std::uint64_t period_ns;
+        const char* description;
+    };
+    const Case cases[] = {
+        {0, "zero"},
+        {500000, "shorter than one step"},
+        {1500000, "not a whole number of steps"},
+    };
+    for (const auto& c : cases) {
+        std::string error;
+        check(!adapter.set_update_period_ns(c.period_ns, error) && !error.empty(),
+              name + " refuses a period " + c.description + " with a reason");
+        std::uint64_t period = 0;
+        check(adapter.update_period_ns(period) && period == unchanged_period,
+              name + " keeps its period after refusing " + c.description);
     }
 }
 
@@ -103,6 +124,42 @@ void magnetometer()
     check(stddev(ex) > 8.0 && stddev(ex) < 12.0, "mag noise in tesla becomes 10 nT");
 }
 
+void magnetometer_update_period()
+{
+    std::string error;
+    auto mag = sa::gazebo::create_gz_mag_sensor_adapter(setup_for<sa::MagAdapterSetup>("mag-ideal.sdf"), error);
+    check(mag != nullptr, "period-test magnetometer is created");
+    if (!mag) {
+        return;
+    }
+
+    // mag-ideal.sdf says 100 Hz: 1 / 100 s = 10 ms = 10,000,000 ns.
+    std::uint64_t period = 0;
+    check(mag->update_period_ns(period) && period == 10000000,
+          "magnetometer reports the configured 10 ms period");
+    sa::MagSample sample{};
+    for (int k = 0; k < 3; ++k) {
+        check(mag->step(mag_truth(k), sample, error), "magnetometer step before period change");
+    }
+    check(mag->set_update_period_ns(5000000, error), "magnetometer accepts a five-step period");
+    check(mag->update_period_ns(period) && period == 5000000, "magnetometer reports the changed 5 ms period");
+
+    std::vector<int> updated_steps;
+    for (int k = 3; k < 12; ++k) {
+        check(mag->step(mag_truth(k), sample, error), "magnetometer step after period change");
+        if (sample.updated) {
+            updated_steps.push_back(k);
+        }
+    }
+    // Starting with step 3, the hand-worked 5 ms boundaries are steps 5 and 10.
+    check(updated_steps == std::vector<int>({5, 10}),
+          "magnetometer changes phase to the 5 ms multiples from time 0");
+    check_invalid_periods(*mag, 5000000, "magnetometer");
+    check(mag->reset(error), "magnetometer period-test reset succeeds");
+    check(mag->update_period_ns(period) && period == 10000000,
+          "magnetometer reset restores the configured 10 ms period");
+}
+
 // --- air pressure ---
 
 // Independent expectation: standard troposphere with geopotential height.
@@ -159,6 +216,45 @@ void air_pressure()
     check(!noisy->capabilities().sea_level_weather && !noisy->capabilities().temperature &&
               !noisy->capabilities().drift,
           "capabilities: no weather, no temperature, no drift");
+}
+
+void air_pressure_update_period()
+{
+    std::string error;
+    auto baro = sa::gazebo::create_gz_baro_sensor_adapter(setup_for<sa::BaroAdapterSetup>("baro-ideal.sdf"), error);
+    check(baro != nullptr, "period-test air pressure sensor is created");
+    if (!baro) {
+        return;
+    }
+
+    // baro-ideal.sdf says 50 Hz: 1 / 50 s = 20 ms = 20,000,000 ns.
+    std::uint64_t period = 0;
+    check(baro->update_period_ns(period) && period == 20000000,
+          "barometer reports the configured 20 ms period");
+    sa::BaroSample sample{};
+    for (int k = 0; k < 3; ++k) {
+        sa::BaroTruth truth{};
+        truth.sim_time_ns = static_cast<std::uint64_t>(k) * 1000000;
+        check(baro->step(truth, sample, error), "barometer step before period change");
+    }
+    check(baro->set_update_period_ns(5000000, error), "barometer accepts a five-step period");
+    check(baro->update_period_ns(period) && period == 5000000, "barometer reports the changed 5 ms period");
+
+    std::vector<int> updated_steps;
+    for (int k = 3; k < 12; ++k) {
+        sa::BaroTruth truth{};
+        truth.sim_time_ns = static_cast<std::uint64_t>(k) * 1000000;
+        check(baro->step(truth, sample, error), "barometer step after period change");
+        if (sample.updated) {
+            updated_steps.push_back(k);
+        }
+    }
+    // Starting with step 3, the hand-worked 5 ms boundaries are steps 5 and 10.
+    check(updated_steps == std::vector<int>({5, 10}), "barometer changes phase to the 5 ms multiples from time 0");
+    check_invalid_periods(*baro, 5000000, "barometer");
+    check(baro->reset(error), "barometer period-test reset succeeds");
+    check(baro->update_period_ns(period) && period == 20000000,
+          "barometer reset restores the configured 20 ms period");
 }
 
 // --- navsat ---
@@ -227,13 +323,50 @@ void navsat()
     check(first_after_reset.position.latitude_deg != first_lat, "a reset does not start the sequence again");
 }
 
+void navsat_update_period()
+{
+    std::string error;
+    auto gps = sa::gazebo::create_gz_gps_sensor_adapter(setup_for<sa::GpsAdapterSetup>("gps-ideal.sdf"), error);
+    check(gps != nullptr, "period-test navsat sensor is created");
+    if (!gps) {
+        return;
+    }
+
+    // gps-ideal.sdf says 10 Hz: 1 / 10 s = 100 ms = 100,000,000 ns.
+    std::uint64_t period = 0;
+    check(gps->update_period_ns(period) && period == 100000000, "GPS reports the configured 100 ms period");
+    sa::GpsSample sample{};
+    for (int k = 0; k < 3; ++k) {
+        check(gps->step(gps_truth(k), sample, error), "GPS step before period change");
+    }
+    check(gps->set_update_period_ns(5000000, error), "GPS accepts a five-step period");
+    check(gps->update_period_ns(period) && period == 5000000, "GPS reports the changed 5 ms period");
+
+    std::vector<int> updated_steps;
+    for (int k = 3; k < 12; ++k) {
+        check(gps->step(gps_truth(k), sample, error), "GPS step after period change");
+        if (sample.updated) {
+            updated_steps.push_back(k);
+        }
+    }
+    // Starting with step 3, the hand-worked 5 ms boundaries are steps 5 and 10.
+    check(updated_steps == std::vector<int>({5, 10}), "GPS changes phase to the 5 ms multiples from time 0");
+    check_invalid_periods(*gps, 5000000, "GPS");
+    check(gps->reset(error), "GPS period-test reset succeeds");
+    check(gps->update_period_ns(period) && period == 100000000,
+          "GPS reset restores the configured 100 ms period");
+}
+
 }  // namespace
 
 int main()
 {
     magnetometer();
+    magnetometer_update_period();
     air_pressure();
+    air_pressure_update_period();
     navsat();
+    navsat_update_period();
     if (failures == 0) {
         std::printf("gz_mag_baro_gps_sensor_adapter_test: OK\n");
     }

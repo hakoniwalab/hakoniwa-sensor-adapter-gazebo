@@ -28,7 +28,14 @@ public:
         }
         sdf_.SetTopic(detail::unique_topic(setup_));
         detail::seed_random(setup_);
-        return create_sensor(error);
+        if (!create_sensor(error) ||
+            !detail::period_from_update_rate(sensor_->UpdateRate(), setup_.physics_step_ns,
+                                             configured_period_ns_, error)) {
+            return false;
+        }
+        update_period_ns_ = configured_period_ns_;
+        sensor_->SetUpdateRate(detail::update_rate_from_period(update_period_ns_));
+        return true;
     }
 
     bool step(const MagTruth& truth, MagSample& out, std::string& error) override
@@ -45,7 +52,8 @@ public:
         sensor_->SetWorldMagneticField(
             gz::math::Vector3d(b.x, b.y, b.z) / kNanoTeslaPerTesla);
 
-        if (sensor_->gz::sensors::Sensor::Update(detail::to_gz_time(truth.sim_time_ns), false)) {
+        const bool sample_now = truth.sim_time_ns % update_period_ns_ == 0;
+        if (sample_now && sensor_->gz::sensors::Sensor::Update(detail::to_gz_time(truth.sim_time_ns), true)) {
             const gz::math::Vector3d field = sensor_->MagneticField() * kNanoTeslaPerTesla;
             last_ = {true, truth.sim_time_ns, {field.X(), field.Y(), field.Z()}, 0};
         } else {
@@ -59,7 +67,29 @@ public:
     {
         clock_.reset();
         last_ = {};
-        return create_sensor(error);
+        update_period_ns_ = configured_period_ns_;
+        if (!create_sensor(error)) {
+            return false;
+        }
+        sensor_->SetUpdateRate(detail::update_rate_from_period(update_period_ns_));
+        return true;
+    }
+
+    bool update_period_ns(std::uint64_t& period_ns) const override
+    {
+        period_ns = update_period_ns_;
+        return true;
+    }
+
+    bool set_update_period_ns(std::uint64_t period_ns, std::string& error) override
+    {
+        if (!detail::validate_update_period(period_ns, setup_.physics_step_ns, error)) {
+            return false;
+        }
+        update_period_ns_ = period_ns;
+        sensor_->SetUpdateRate(detail::update_rate_from_period(update_period_ns_));
+        error.clear();
+        return true;
     }
 
     MagAdapterCapabilities capabilities() const override
@@ -92,6 +122,8 @@ private:
     detail::StepClock clock_;
     sdf::Sensor sdf_{};
     std::unique_ptr<gz::sensors::MagnetometerSensor> sensor_;
+    std::uint64_t configured_period_ns_{0};
+    std::uint64_t update_period_ns_{0};
     MagSample last_{};
     std::vector<LogColumn> columns_;
 };

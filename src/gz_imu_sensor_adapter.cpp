@@ -1,7 +1,5 @@
 #include "hakoniwa/sensor_adapter/gazebo/gz_imu_sensor_adapter.hpp"
 
-#include <chrono>
-
 #include <gz/math/Pose3.hh>
 #include <gz/math/Quaternion.hh>
 #include <gz/math/Rand.hh>
@@ -45,7 +43,14 @@ public:
         if (setup_.has_random_seed) {
             gz::math::Rand::Seed(static_cast<unsigned int>(setup_.random_seed));
         }
-        return create_sensor(error);
+        if (!create_sensor(error) ||
+            !detail::period_from_update_rate(sensor_->UpdateRate(), setup_.physics_step_ns,
+                                             configured_period_ns_, error)) {
+            return false;
+        }
+        update_period_ns_ = configured_period_ns_;
+        sensor_->SetUpdateRate(detail::update_rate_from_period(update_period_ns_));
+        return true;
     }
 
     bool step(const ImuTruth& truth, ImuSample& out, std::string& error) override
@@ -69,10 +74,12 @@ public:
         sensor_->SetAngularVelocity(to_gz(truth.angular_velocity));
         sensor_->SetLinearAcceleration(kinematic);
 
-        // The base Update checks the update rate and returns true only when it measured.
-        const auto now = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-            std::chrono::nanoseconds(truth.sim_time_ns));
-        const bool measured = sensor_->gz::sensors::Sensor::Update(now, false);
+        // Keep the phase tied to time 0 even after a period change. Forcing only
+        // on the chosen boundaries also avoids floating-point rate drift inside
+        // gz-sensors; SetUpdateRate still gives its error models the rate in use.
+        const bool sample_now = truth.sim_time_ns % update_period_ns_ == 0;
+        const bool measured = sample_now &&
+                              sensor_->gz::sensors::Sensor::Update(detail::to_gz_time(truth.sim_time_ns), true);
         if (measured) {
             last_.gyro = {true, truth.sim_time_ns, from_gz(sensor_->AngularVelocity()), 0};
             last_.accel = {true, truth.sim_time_ns, from_gz(sensor_->LinearAcceleration()), 0};
@@ -93,7 +100,46 @@ public:
         // values after a reset are not the ones after creation.
         next_time_ns_ = 0;
         last_ = {};
-        return create_sensor(error);
+        update_period_ns_ = configured_period_ns_;
+        if (!create_sensor(error)) {
+            return false;
+        }
+        sensor_->SetUpdateRate(detail::update_rate_from_period(update_period_ns_));
+        return true;
+    }
+
+    bool update_period_ns(std::uint64_t& period_ns) const override
+    {
+        period_ns = update_period_ns_;
+        return true;
+    }
+
+    bool set_update_period_ns(std::uint64_t period_ns, std::string& error) override
+    {
+        if (!detail::validate_update_period(period_ns, setup_.physics_step_ns, error)) {
+            return false;
+        }
+        update_period_ns_ = period_ns;
+        sensor_->SetUpdateRate(detail::update_rate_from_period(update_period_ns_));
+        error.clear();
+        return true;
+    }
+
+    bool part_update_period_ns(ImuPart part, std::uint64_t& period_ns) const override
+    {
+        (void)part;
+        return update_period_ns(period_ns);
+    }
+
+    bool set_part_update_period_ns(ImuPart part, std::uint64_t period_ns, std::string& error) override
+    {
+        (void)part;
+        if (period_ns == update_period_ns_) {
+            error.clear();
+            return true;
+        }
+        error = "the gyro and accelerometer share one update period; change both with set_update_period_ns";
+        return false;
     }
 
     ImuAdapterCapabilities capabilities() const override
@@ -140,6 +186,8 @@ private:
     sdf::Sensor sdf_{};
     std::unique_ptr<gz::sensors::ImuSensor> sensor_;
     std::uint64_t next_time_ns_{0};
+    std::uint64_t configured_period_ns_{0};
+    std::uint64_t update_period_ns_{0};
     ImuSample last_{};
     std::vector<LogColumn> columns_;
 };

@@ -95,6 +95,74 @@ void ideal_sensor_passes_the_truth_at_its_rate()
     }
 }
 
+void update_period_can_be_read_changed_validated_and_reset()
+{
+    std::string error;
+    auto imu = sa::gazebo::create_gz_imu_sensor_adapter(setup_for("imu-ideal.sdf"), error);
+    check(imu != nullptr, "period-test IMU is created");
+    if (!imu) {
+        return;
+    }
+
+    // imu-ideal.sdf says 250 Hz: 1 / 250 s = 4 ms = 4,000,000 ns.
+    std::uint64_t period = 0;
+    check(imu->update_period_ns(period) && period == 4000000, "IMU reports the configured 4 ms period");
+    period = 0;
+    check(imu->part_update_period_ns(sa::ImuPart::gyro, period) && period == 4000000,
+          "gyro reports the shared configured period");
+    period = 0;
+    check(imu->part_update_period_ns(sa::ImuPart::accel, period) && period == 4000000,
+          "accelerometer reports the shared configured period");
+
+    sa::ImuSample sample{};
+    for (int k = 0; k < 3; ++k) {
+        check(imu->step(truth_at(k), sample, error), "IMU step before period change");
+    }
+
+    error.clear();
+    check(imu->set_update_period_ns(5000000, error), "IMU accepts a five-step period");
+    check(imu->update_period_ns(period) && period == 5000000, "IMU reports the changed 5 ms period");
+    check(imu->part_update_period_ns(sa::ImuPart::gyro, period) && period == 5000000,
+          "gyro follows the changed shared period");
+    check(imu->part_update_period_ns(sa::ImuPart::accel, period) && period == 5000000,
+          "accelerometer follows the changed shared period");
+
+    std::vector<int> updated_steps;
+    for (int k = 3; k < 12; ++k) {
+        check(imu->step(truth_at(k), sample, error), "IMU step after period change");
+        check(sample.gyro.updated == sample.accel.updated, "both IMU parts update together");
+        if (sample.gyro.updated) {
+            updated_steps.push_back(k);
+        }
+    }
+    // Starting with step 3, the hand-worked 5 ms boundaries are steps 5 and 10.
+    check(updated_steps == std::vector<int>({5, 10}), "IMU changes phase to the 5 ms multiples from time 0");
+
+    error.clear();
+    check(!imu->set_update_period_ns(0, error) && !error.empty(), "IMU refuses a zero period with a reason");
+    check(imu->update_period_ns(period) && period == 5000000, "zero does not change the IMU period");
+    error.clear();
+    check(!imu->set_update_period_ns(500000, error) && !error.empty(),
+          "IMU refuses a period shorter than one step with a reason");
+    check(imu->update_period_ns(period) && period == 5000000, "a short period does not change the IMU period");
+    error.clear();
+    check(!imu->set_update_period_ns(1500000, error) && !error.empty(),
+          "IMU refuses a fractional-step period with a reason");
+    check(imu->update_period_ns(period) && period == 5000000,
+          "a fractional-step period does not change the IMU period");
+
+    error.clear();
+    check(imu->set_part_update_period_ns(sa::ImuPart::gyro, 5000000, error),
+          "an unchanged gyro part period is accepted");
+    error.clear();
+    check(!imu->set_part_update_period_ns(sa::ImuPart::accel, 6000000, error) && !error.empty(),
+          "changing only one IMU part is refused with a reason");
+    check(imu->update_period_ns(period) && period == 5000000, "a refused part change leaves the shared period");
+
+    check(imu->reset(error), "IMU period-test reset succeeds");
+    check(imu->update_period_ns(period) && period == 4000000, "IMU reset restores the configured 4 ms period");
+}
+
 void same_seed_gives_the_same_values_and_reset_does_not_reseed()
 {
     std::string error;
@@ -166,6 +234,7 @@ void capabilities_declare_what_gazebo_lacks()
 int main()
 {
     ideal_sensor_passes_the_truth_at_its_rate();
+    update_period_can_be_read_changed_validated_and_reset();
     same_seed_gives_the_same_values_and_reset_does_not_reseed();
     a_mount_pose_in_the_sdf_is_rejected();
     a_time_jump_is_an_error();
